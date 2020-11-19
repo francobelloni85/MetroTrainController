@@ -91,54 +91,32 @@ namespace MetroTrainController
 
     public class SharedVariables
     {
-        private state _state = state.STARTUP;
-
-        private lever_position _lever_position = lever_position.strong_braking;
-
         public string GPIO_A = "00000000";
 
         public string GPIO_B = "00000000";
 
         public string GPIO_C = "00000000";
+              
 
-        #region GET & SET
-
-        public state GetState() { return _state; }
-
-        public void SetState(state value) { _state = value; }
-
-        public lever_position GetLeverPosition() { return _lever_position; }
-
-        public void SetLeverPosition(lever_position value)
+        public void WriteInput(state state, lever_position lever_position)
         {
-            _lever_position = value;
-        }
-
-        #endregion
-
-        public void WriteOutput(state state, lever_position lever_position)
-        {
-            SetState(state);
-            SetLeverPosition(lever_position);
-
             switch (state)
             {
 
                 case state.NORMAL:
-                    WritePin(gpio.GPIO_B, (int)lever_position);
+                    WritePinInput((int)lever_position);
                     break;
                 case state.EMERGENCY:
-                    WritePin(gpio.GPIO_B, 0);
+                    WritePinInput(0);
                     break;
                 case state.STOP:
-                    WritePin(gpio.GPIO_B, 1);
+                    WritePinInput(1);
                     break;
-
             }
 
         }
 
-        private void WritePin(gpio gpio, int index)
+        private void WritePinInput(int index)
         {
             if (index > 8 || index < 0)
                 throw new System.Exception("Wrong index");
@@ -147,28 +125,20 @@ namespace MetroTrainController
             StringBuilder sb = new StringBuilder(empty);
             sb[index] = '1';
 
-            switch (gpio)
-            {
-                case gpio.GPIO_A:
-                    GPIO_A = sb.ToString();
-                    break;
-                case gpio.GPIO_B:
-                    GPIO_B = sb.ToString();
-                    break;
-                case gpio.GPIO_C:
-                    GPIO_C = sb.ToString();
-                    break;
-            }
+            GPIO_B = sb.ToString();
 
         }
 
-        public void PrintGPIOValues()
+        public void WritePinOutput(int index)
         {
-            Console.WriteLine("");
-            Console.WriteLine("state= " + _state.ToString() + " lever_position=" + _lever_position.ToString());
-            Console.WriteLine("GPIO_A= " + GPIO_A);
-            Console.WriteLine("GPIO_B= " + GPIO_B);
-            Console.WriteLine("GPIO_C= " + GPIO_C);
+            if (index > 12 || index < 0)
+                throw new System.Exception("Wrong index");
+
+            string empty = "000000000000";
+            StringBuilder sb = new StringBuilder(empty);
+            sb[index] = '1';
+
+            GPIO_C = sb.ToString();
         }
 
     }
@@ -206,13 +176,12 @@ namespace MetroTrainController
         {
             Console.WriteLine("");
             Console.WriteLine("EventSimulator started");
-            Console.WriteLine("my_state= " + this._variables.GetState().ToString());
+            
             Thread.Sleep(100);
 
             foreach (var item in this._events)
             {
-                this._variables.WriteOutput(item.State, item.Lever_Position);
-                this._variables.PrintGPIOValues();
+                this._variables.WriteInput(item.State, item.Lever_Position);                
                 Thread.Sleep(item.Delay);
             }
 
@@ -225,25 +194,243 @@ namespace MetroTrainController
         private SharedVariables _variables;
 
         /// <summary>
-        /// State actually in the memory of the system
+        /// The value read from the input
+        /// </summary>
+        private state CurrentState { get; set; }
+
+        /// <summary>
+        /// The value read from the input
         /// </summary>
         public lever_position CurrentLeverPosition { get; set; }
+
+        /// <summary>
+        /// Is set to true if the emergency button has been pressed
+        /// </summary>
+        private bool _is_emergency_ON = false;
+
+        /// <summary>
+        /// Is set to true if the emergency stop has been pressed
+        /// </summary>
+        private bool _is_stop_ON = false;
+
 
         // The constructor obtains the state information.
         public TrainController(SharedVariables variables)
         {
             this._variables = variables;
-            this._variables.SetState(state.NORMAL);
         }
 
         // The thread procedure performs the task, such as formatting
         // and printing a document.
         public void Run()
         {
+
             Console.WriteLine("");
             Console.WriteLine("TrainController started");
-            Console.WriteLine("my_state= " + this._variables.GetState().ToString());
+
+            while (true)
+            {
+                PrintGPIOValues();
+
+                ReadInput(this._variables.GPIO_B);
+
+                if (_is_emergency_ON)
+                {
+                    PrintMyStatus();
+                    return;
+                }
+
+                if (_is_stop_ON)
+                {
+                    ManageStopSignal();
+                    PrintMyStatus();
+                    return;
+                }
+
+                switch (CurrentState)
+                {
+
+                    case state.EMERGENCY:
+                        this._is_emergency_ON = true;
+                        WriteOutput(lever_position.strong_braking);
+                        break;
+
+
+                    case state.STOP:
+                        this._is_stop_ON = true;
+                        WriteOutput(lever_position.medium_braking);
+                        break;
+
+
+                    case state.NORMAL:
+                        WriteOutput(CurrentLeverPosition);
+                        break;
+                }
+
+
+                PrintMyStatus();
+
+            }
+
+
         }
+
+        private void ReadInput(string value)
+        {
+
+            if (value[0] == '1')
+            {
+                CurrentState = state.EMERGENCY;
+                _is_emergency_ON = true;
+            }
+
+            if (value[1] == '1')
+            {
+                CurrentState = state.STOP;
+                _is_stop_ON = true;
+            }
+
+            if (value[2] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.strong_braking;
+            }
+
+            if (value[3] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.medium_braking;
+            }
+
+            if (value[4] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.minimum_braking;
+            }
+
+            if (value[5] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.no_acceleration;
+            }
+
+            if (value[6] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.minimum_acceleration;
+            }
+
+            if (value[7] == '1')
+            {
+                CurrentState = state.NORMAL;
+                CurrentLeverPosition = lever_position.medium_acceleration;
+            }
+
+            //if (value[8] == '1')
+            //{
+            //    CurrentState = state.NORMAL;
+            //    CurrentLeverPosition = lever_position.maximum_acceleration;
+            //}
+
+
+        }
+
+        /// <summary>
+        /// There are 4 braking force levels
+        /// These are communicated to the braking systems via pins 8-12 of GPIOC.
+        /// --> Pin 8 on means minimum braking force
+        /// --> Pin 12 on means maximum braking force
+        /// Pins 8-11 are used to report the position of the braking lever.
+        /// Pin 12 is used only for emergency braking.
+        /// Outputs must be configured as push-pull.
+        /// </summary>
+        private void WriteOutput(lever_position lever_Position)
+        {
+
+            switch (lever_Position)
+            {
+                case lever_position.minimum_acceleration:
+                    this._variables.WritePinOutput(4);
+                    break;
+
+                case lever_position.medium_acceleration:
+                    this._variables.WritePinOutput(5);
+                    break;
+
+                case lever_position.maximum_acceleration:
+                    this._variables.WritePinOutput(6);
+                    break;
+
+                case lever_position.no_acceleration:
+                    this._variables.WritePinOutput(7);
+                    break;
+
+                case lever_position.minimum_braking:
+                    this._variables.WritePinOutput(8);
+                    break;
+
+                case lever_position.medium_braking:
+                    this._variables.WritePinOutput(9);
+                    break;
+
+                case lever_position.strong_braking:
+                    this._variables.WritePinOutput(10);
+                    break;
+
+            }
+
+
+
+
+        }
+
+        /// <summary>
+        /// 
+        /// Outputs: Braking
+        /// 
+        /// The signal is asynchronous and unpredictable
+        /// When this request is received, the train must stop “gently”: 
+        /// -> Motor acceleration is set to zero,
+        /// -> Brakes are activated at medium force
+        /// This request has greater priority than the commands issued by the
+        /// driver. Therefore, the position of the lever is ignored.
+        /// 
+        /// After stopping because of this signal, the train must not restart until the
+        /// stop signal is active. When the stop signal is cleared, the train can
+        /// resume normal operation. However, to this end it is first necessary that
+        /// the control lever is set in position zero.
+        ///
+        /// Outputs: Acceleration
+        /// 
+        /// There are 3 power levels, corresponding to the three positive position
+        /// of the lever.
+        /// These are communicated to the motor via pins 0-2 of GPIOC.
+        /// Pin 0 on means minimum power
+        /// Pin 2 on means maximum power
+        /// Outputs must be configured as push-pull.
+        /// </summary>
+        private void ManageStopSignal()
+        {
+
+
+
+        }
+
+
+        public void PrintGPIOValues()
+        {
+            Console.WriteLine("");            
+            Console.WriteLine("GPIO_A= " + this._variables.GPIO_A);
+            Console.WriteLine("GPIO_B= " + this._variables.GPIO_B);
+            Console.WriteLine("GPIO_C= " + this._variables.GPIO_C);
+        }
+
+        public void PrintMyStatus() {
+            Console.WriteLine("state= " + CurrentState.ToString() + " lever_position=" + CurrentLeverPosition.ToString());
+        }
+
+        
+
     }
 
     public class ManageComunications
@@ -264,7 +451,6 @@ namespace MetroTrainController
         {
             Console.WriteLine("");
             Console.WriteLine("ManageComunications started");
-            Console.WriteLine("my_state= " + this._variables.GetState().ToString());
         }
     }
 
