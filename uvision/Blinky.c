@@ -4,44 +4,57 @@
  *----------------------------------------------------------------------------*/
 
 #include <stm32f10x.h>                       /* STM32F103 definitions         */
+#include <RTL.h>                      /* RTX kernel functions & defines      */
+
 #define GIGI_USE_ODR 999
 
-int WAIT;
+volatile int T1=0;
+volatile int T2=0;
+volatile int IDLE=0;
 
-/*----------------------------------------------------------------------------
-  wait function
- *----------------------------------------------------------------------------*/
-void wait (void)  {
-  int  d, j;
-  WAIT = 1;
-  for (j=0; j<5; j++)
-		for (d = 0; d < 1000000; d++);             /* only to delay for LED flashes */
-  WAIT = 0;
+__task void Task1(void);
+__task void Task2(void);
+
+void some_delay(unsigned long int n) {
+	unsigned long int i;
+	for (i-0; i<n; i++) {i=i;}
 }
 
+// Declares a semaphore
+OS_SEM sem;
 
-/*----------------------------------------------------------------------------
-  Main Program
- *----------------------------------------------------------------------------*/
-
-int main(void) {
-  unsigned int i;                            /* LED variable                  */
-
-  RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;        /* Enable GPIOB clock            */
-  // equivalent to RCC->APB2ENR |= (1UL << 3);                
-  GPIOB->CRH    =  0x00000003;               /* PB.8 defined as Output   */
-	i = 1<<8;
-#ifdef GIGI_USE_ODR
-  while (1) {		// Loop forever
-      GPIOB->ODR ^= i;                       // Toggle LED
-      wait ();                               /* call wait function            */
+// Defines Task1
+__task void Task1(void) {
+//  os_sem_init( sem, 0 );     // qui non funziona!!!
+  while( 1 ) {
+		T2=0; T1=1; IDLE=0;
+//    os_dly_wait( 2 );
+		some_delay(1000);
+    os_sem_send( sem ); // Frees the semaphore
   }
-#else
-  while (1) {		// Loop forever
-      GPIOB->BSRR = i;                       /* Turn LED on                   */
-      wait ();                               /* call wait function            */
-      GPIOB->BRR = i;                        /* Turn LED off                  */
-      wait ();                               /* call wait function            */
+}
+
+// Defines Task2
+__task void Task2(void) {
+  while( 1 ) {
+    // Waits for the semaphore to be freed by Task1
+    os_sem_wait( sem, 0xFFFF ); 
+		T2=1; T1=0; IDLE=0;
+    some_delay(1000);
   }
-#endif
+}
+
+// Defines TaskInit
+__task void TaskInit(void) {
+  os_sem_init( sem, 0 );     // Initializes the semaphore
+  os_tsk_create( Task1, 1 );
+  os_tsk_create( Task2, 1 ); // TRY WITH DIFFERENT PRIORITY !! 
+  os_tsk_delete_self();      // kills self
+}
+
+// Main
+int main (void) { 
+  // Starts TaskInit which, in turn,
+  // creates the two tasks Task1 and Task2
+  os_sys_init( TaskInit );
 }

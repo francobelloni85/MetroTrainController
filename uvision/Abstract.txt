@@ -20,3 +20,6 @@ The program is available in different targets:
 
   STM32F103 RAM:        configured for on-chip RAM
                         (used for target debugging)
+
+Microcontrollore:
+STM32f103RB

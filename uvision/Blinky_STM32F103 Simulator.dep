@@ -1,6 +1,23 @@
 Dependencies for Project 'Blinky', Target 'STM32F103 Simulator': (DO NOT MODIFY !)
-F (startup_stm32f10x_md.s)(0x51C76166)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1" -I C:\Keil\ARM\RV31\INC -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\ST\STM32F10x --list ".\Lst\startup_stm32f10x_md.lst" --xref -o ".\Obj\startup_stm32f10x_md.o" --depend ".\Obj\startup_stm32f10x_md.d")
-F (system_stm32f10x.c)(0x51C76166)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I C:\Keil\ARM\RV31\INC -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\ST\STM32F10x -DSTM32F10X_MD -o ".\Obj\system_stm32f10x.o" --omf_browse ".\Obj\system_stm32f10x.crf" --depend ".\Obj\system_stm32f10x.d")
-F (Retarget.c)(0x51C76166)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\retarget.o" --omf_browse ".\Obj\retarget.crf" --depend ".\Obj\retarget.d")
-F (Blinky.c)(0x55327A46)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\blinky.o" --omf_browse ".\Obj\blinky.crf" --depend ".\Obj\blinky.d")
-F (Abstract.txt)(0x51C76166)()
+F (startup_stm32f10x_md.s)(0x5FB6AC3A)(--cpu Cortex-M3 --pd "__RTX SETA 1" -g --apcs=interwork --pd "__MICROLIB SETA 1" -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" --list ".\Lst\startup_stm32f10x_md.lst" --xref -o ".\Obj\startup_stm32f10x_md.o" --depend ".\Obj\startup_stm32f10x_md.d")
+F (system_stm32f10x.c)(0x5FB6AC3A)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\system_stm32f10x.o" --omf_browse ".\Obj\system_stm32f10x.crf" --depend ".\Obj\system_stm32f10x.d")
+I (D:\Program Files\uVision\ARM\Inc\ST\STM32F10x\stm32f10x.h)(0x4F58996C)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cm3.h)(0x50067DE2)
+I (D:\Program Files\uVision\ARM\ARMCC\bin\..\include\stdint.h)(0x4EB134F4)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cmInstr.h)(0x5059B0EC)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cmFunc.h)(0x4FDAE8BC)
+I (D:\Program Files\uVision\ARM\Inc\ST\STM32F10x\system_stm32f10x.h)(0x4F58996C)
+F (Retarget.c)(0x5FB6AC3A)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\retarget.o" --omf_browse ".\Obj\retarget.crf" --depend ".\Obj\retarget.d")
+I (D:\Program Files\uVision\ARM\ARMCC\bin\..\include\rt_misc.h)(0x4EB134F0)
+F (.\RTX_Config.c)(0x5FB6B935)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\rtx_config.o" --omf_browse ".\Obj\rtx_config.crf" --depend ".\Obj\rtx_config.d")
+I (D:\Program Files\uVision\ARM\RV31\INC\RTL.h)(0x504D955C)
+I (D:\Program Files\uVision\ARM\RV31\INC\RTX_lib.c)(0x505076D8)
+F (Blinky.c)(0x5FB6B90D)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork -I "D:\Program Files\uVision\ARM\RV31\INC" -I "D:\Program Files\uVision\ARM\CMSIS\Include" -I "D:\Program Files\uVision\ARM\Inc\ST\STM32F10x" -DSTM32F10X_MD -o ".\Obj\blinky.o" --omf_browse ".\Obj\blinky.crf" --depend ".\Obj\blinky.d")
+I (D:\Program Files\uVision\ARM\Inc\ST\STM32F10x\stm32f10x.h)(0x4F58996C)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cm3.h)(0x50067DE2)
+I (D:\Program Files\uVision\ARM\ARMCC\bin\..\include\stdint.h)(0x4EB134F4)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cmInstr.h)(0x5059B0EC)
+I (D:\Program Files\uVision\ARM\CMSIS\Include\core_cmFunc.h)(0x4FDAE8BC)
+I (D:\Program Files\uVision\ARM\Inc\ST\STM32F10x\system_stm32f10x.h)(0x4F58996C)
+I (D:\Program Files\uVision\ARM\RV31\INC\RTL.h)(0x504D955C)
+F (Abstract.txt)(0x5FB6B2B0)()

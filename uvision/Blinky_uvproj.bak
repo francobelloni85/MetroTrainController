@@ -200,7 +200,7 @@
             <GenPPlst>0</GenPPlst>
             <AdsCpuType>"Cortex-M3"</AdsCpuType>
             <RvctDeviceName></RvctDeviceName>
-            <mOS>1</mOS>
+            <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
             <hadIROM>1</hadIROM>
@@ -410,11 +410,6 @@
               <FileName>Retarget.c</FileName>
               <FileType>1</FileType>
               <FilePath>Retarget.c</FilePath>
-            </File>
-            <File>
-              <FileName>RTX_Config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\RTX_Config.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -844,11 +839,6 @@
               <FileName>Retarget.c</FileName>
               <FileType>1</FileType>
               <FilePath>Retarget.c</FilePath>
-            </File>
-            <File>
-              <FileName>RTX_Config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\RTX_Config.c</FilePath>
             </File>
           </Files>
         </Group>
