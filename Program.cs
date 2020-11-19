@@ -19,25 +19,6 @@ namespace MetroTrainController
         maximum_acceleration,
     }
 
-    public enum gpio
-    {
-
-        /// <summary>
-        /// Receive messages
-        /// </summary>
-        GPIO_A,
-
-        /// <summary>
-        /// Inputs
-        /// </summary>
-        GPIO_B,
-
-        /// <summary>
-        /// Outputs
-        /// </summary>
-        GPIO_C
-    }
-
     class Program
     {
         static void Main(string[] args)
