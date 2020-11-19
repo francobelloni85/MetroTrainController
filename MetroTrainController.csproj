@@ -6,7 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="code\" />
+    <Compile Remove="code\**" />
+    <EmbeddedResource Remove="code\**" />
+    <None Remove="code\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="doc\" />
   </ItemGroup>
 
