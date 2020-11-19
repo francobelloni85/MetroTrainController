@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Folder Include="code\" />
+    <Folder Include="doc\" />
   </ItemGroup>
 
 </Project>
