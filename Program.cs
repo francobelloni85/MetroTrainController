@@ -168,6 +168,8 @@ namespace MetroTrainController
             _events.Add(new EventData() { State = state.NORMAL, Lever_Position = lever_position.strong_braking, Delay = 100 });
             _events.Add(new EventData() { State = state.STOP, Lever_Position = lever_position.no_acceleration, Delay = 100 });
             _events.Add(new EventData() { State = state.EMERGENCY, Lever_Position = lever_position.no_acceleration, Delay = 100 });
+            _events.Add(new EventData() { State = state.NORMAL, Lever_Position = lever_position.strong_braking, Delay = 100 });
+            _events.Add(new EventData() { State = state.NORMAL, Lever_Position = lever_position.minimum_acceleration, Delay = 100 });
         }
 
         // The thread procedure performs the task, such as formatting
@@ -181,6 +183,12 @@ namespace MetroTrainController
 
             foreach (var item in this._events)
             {
+                Console.WriteLine("");
+                Console.WriteLine("------  new input added ------ ");
+                Console.WriteLine("[" + item.State + "][" + item.Lever_Position + "]");                
+                Console.WriteLine("------------------------------- ");
+                Console.WriteLine("");
+
                 this._variables.WriteInput(item.State, item.Lever_Position);                
                 Thread.Sleep(item.Delay);
             }
@@ -190,6 +198,9 @@ namespace MetroTrainController
 
     public class TrainController
     {
+
+        public int tic = 0;
+
         // State information used in the task.
         private SharedVariables _variables;
 
@@ -224,53 +235,68 @@ namespace MetroTrainController
         // and printing a document.
         public void Run()
         {
-
-            Console.WriteLine("");
-            Console.WriteLine("TrainController started");
-
-            while (true)
+            try
             {
-                PrintGPIOValues();
+                Console.WriteLine("");
+                Console.WriteLine("TrainController started");
 
-                ReadInput(this._variables.GPIO_B);
-
-                if (_is_emergency_ON)
+                while (true)
                 {
+                    ReadInput(this._variables.GPIO_B);
+
+                    PrintGPIOValues();
+
+                    if (_is_emergency_ON)
+                    {
+                        CurrentState = state.EMERGENCY;
+                        CurrentLeverPosition = lever_position.strong_braking;
+                        PrintMyStatus();
+                        continue;
+                    }
+
+                    if (_is_stop_ON)
+                    {
+                        CurrentState = state.STOP;
+                        CurrentLeverPosition = lever_position.medium_braking;
+                        ManageStopSignal();
+                        PrintMyStatus();
+                        continue;
+                    }
+
+                    switch (CurrentState)
+                    {
+
+                        case state.EMERGENCY:
+                            this._is_emergency_ON = true;
+                            WriteOutput(lever_position.strong_braking);
+                            break;
+
+
+                        case state.STOP:
+                            this._is_stop_ON = true;
+                            WriteOutput(lever_position.medium_braking);
+                            break;
+
+
+                        case state.NORMAL:
+                            WriteOutput(CurrentLeverPosition);
+                            break;
+                    }
+
+
                     PrintMyStatus();
-                    return;
+
+                    tic++;
+
                 }
-
-                if (_is_stop_ON)
-                {
-                    ManageStopSignal();
-                    PrintMyStatus();
-                    return;
-                }
-
-                switch (CurrentState)
-                {
-
-                    case state.EMERGENCY:
-                        this._is_emergency_ON = true;
-                        WriteOutput(lever_position.strong_braking);
-                        break;
-
-
-                    case state.STOP:
-                        this._is_stop_ON = true;
-                        WriteOutput(lever_position.medium_braking);
-                        break;
-
-
-                    case state.NORMAL:
-                        WriteOutput(CurrentLeverPosition);
-                        break;
-                }
-
-
-                PrintMyStatus();
 
             }
+            catch (Exception ex) {
+                Console.WriteLine("");
+                Console.WriteLine("TrainController Exception");
+                Console.WriteLine(ex.Message);
+            }
+           
 
 
         }
@@ -281,12 +307,14 @@ namespace MetroTrainController
             if (value[0] == '1')
             {
                 CurrentState = state.EMERGENCY;
+                CurrentLeverPosition = lever_position.strong_braking;
                 _is_emergency_ON = true;
             }
 
             if (value[1] == '1')
             {
                 CurrentState = state.STOP;
+                CurrentLeverPosition = lever_position.medium_braking;
                 _is_stop_ON = true;
             }
 
@@ -426,7 +454,8 @@ namespace MetroTrainController
         }
 
         public void PrintMyStatus() {
-            Console.WriteLine("state= " + CurrentState.ToString() + " lever_position=" + CurrentLeverPosition.ToString());
+            Console.WriteLine("state= " + CurrentState.ToString());
+            Console.WriteLine("lever_position=" + CurrentLeverPosition.ToString());
         }
 
         
