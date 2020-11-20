@@ -1,6 +1,10 @@
 /*----------------------------------------------------------------------------
  * Name:    BlinkySingleLED.c
  * Purpose: LED Flasher
+ * 
+ * Quando sono in stop
+ * per riprendere "la corsa" deve togliarsi il segnale di stop e il guidatore deve mettere la leva su 0
+ * 
  *----------------------------------------------------------------------------*/
 
 #include <stm32f10x.h> /* STM32F103 definitions         */
@@ -62,7 +66,6 @@ int _is_stop_ON = 0;
 // Declares a semaphore
 OS_SEM sem;
 
-unsigned int out_pin;
 unsigned int in_pin;
 
 char pin_input_array[];
@@ -75,7 +78,7 @@ void WritePinInput(int index)
   {
     return;
   }
-  //
+
   // 	char pin_output_array[] = "00000000";
   //
   // 	switch (index)
@@ -114,35 +117,31 @@ void WritePinInput(int index)
 void ReadInput()
 {
 
-  //   char value[] = "00000000";
-  //
-  // 	GPIOC->ODR |=  (1 << (index+8));
-  //
-  //   if (value[0] == '1')
-  //   {
-  //     CurrentState = EMERGENCY;
-  //     CurrentLeverPosition = strong_braking;
-  //     _is_emergency_ON = 1;
-  //   }
+  if (GPIOC->IDR & 0)
+  {
+    CurrentState = EMERGENCY;
+    CurrentLeverPosition = strong_braking;
+    _is_emergency_ON = 1;
+  }
 
-  //   if (value[1] == '1')
-  //   {
-  //     CurrentState = STOP;
-  //     CurrentLeverPosition = medium_braking;
-  //     _is_stop_ON = 1;
-  //   }
+  if (GPIOC->IDR & 1)
+  {
+    CurrentState = STOP;
+    CurrentLeverPosition = medium_braking;
+    _is_stop_ON = 1;
+  }
 
-  //   if (value[2] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = strong_braking;
-  //   }
+  if (GPIOC->IDR & 2)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = strong_braking;
+  }
 
-  //   if (value[3] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = medium_braking;
-  //   }
+  if (GPIOC->IDR & 3)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = medium_braking;
+  }
 
   //   if (value[4] == '1')
   //   {
@@ -177,27 +176,19 @@ void ReadInput()
 
 // OUTPUTS ------------------------------------------------
 
-unsigned int in_pin;
-
 void WritePinOutput(int index)
 {
   if (index > 12 || index < 0)
   {
     return;
   }
-	
-  in_pin = 1 << index;	
+
+  // Reset the last value
+  GPIOC->ODR = 0x00000000;
+
+  // Set the new value
+  in_pin = 1 << index;
   GPIOC->ODR |= in_pin;
-
-  // GPIOC->ODR |=  (1 << (index+8));
-
-  // switch on initial LED position
-
-  //GPIO_C->ODR = pin_output_array;
-
-  //char empty[] = "000000000000";
-  //empty[index] = '1';
-  //GPIO_C = empty;
 }
 
 void WriteOutput(enum lever_position lever_Position)
@@ -262,11 +253,7 @@ __task void TaskEventSimulator(void)
     task_event_simulator = 1;
     IDLE = 0;
 
-    WritePinOutput(0);
-    some_delay(100);
-
-    WritePinOutput(1);
-    some_delay(100);
+    os_dly_wait(2);
 
     WritePinOutput(2);
     some_delay(100);
@@ -286,8 +273,23 @@ __task void TaskEventSimulator(void)
     WritePinOutput(7);
     some_delay(100);
 
+    WritePinOutput(1);
+    some_delay(100);
+
     WritePinOutput(8);
     some_delay(100);
+
+    WritePinOutput(0);
+    some_delay(100);
+
+    WritePinOutput(8);
+    some_delay(100);
+
+    WritePinOutput(1);
+    some_delay(100);
+
+    os_sem_send( sem ); // Frees the semaphore
+
   }
 }
 
@@ -333,16 +335,24 @@ __task void TaskTrainController(void)
       WriteOutput(CurrentLeverPosition);
       break;
     }
+
+    os_sem_wait( sem, 0xFFFF ); 
+
   }
 }
 
 // Defines TaskInit
 __task void TaskInit(void)
 {
-  os_sem_init(sem, 0); // Initializes the semaphore
+  // Initializes the semaphore
+  os_sem_init(sem, 0);
+
   os_tsk_create(TaskEventSimulator, 1);
-  //os_tsk_create(TaskTrainController, 10);
-  os_tsk_delete_self(); // kills self
+
+  os_tsk_create(TaskTrainController, 5);
+
+  // kills self
+  os_tsk_delete_self();
 }
 
 // Main
@@ -351,11 +361,9 @@ int main(void)
   /* Enable GPIOB clock            */
   RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 
-  // equivalent to RCC->APB2ENR |= (1UL << 3);
-  /* PB.8 defined as Output, PB.15 as Input  */
   GPIOC->CRH = 0x80000003;
-  
-  // Starts TaskInit which, in turn,
-  // creates the two tasks TaskEventSimulator and TaskTrainController
+
+  // creates the two tasks
+  // TaskEventSimulator	and TaskTrainController
   os_sys_init(TaskInit);
 }
