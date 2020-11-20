@@ -62,8 +62,10 @@ int _is_stop_ON = 0;
 // Declares a semaphore
 OS_SEM sem;
 
-char pin_output_array;
-char pin_input_array;
+unsigned int out_pin;
+unsigned int in_pin;
+
+char pin_input_array[];
 
 // INPUTS ------------------------------------------------
 
@@ -73,34 +75,37 @@ void WritePinInput(int index)
   {
     return;
   }
-	switch (index)
-  {
-  case 0:
-    pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
-    break;
-  case 1:
-    pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
-    break;
-  case 2:
-    pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
-    break;
-  case 3:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
-    break;
-  case 4:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
-    break;
-  case 5:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
-    break;
-  case 6:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
-    break;
-  case 7:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
-    break;
-  }
-	
+  //
+  // 	char pin_output_array[] = "00000000";
+  //
+  // 	switch (index)
+  //   {
+  //   case 0:
+  //     pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
+  //     break;
+  //   case 1:
+  //     pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
+  //     break;
+  //   case 2:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
+  //     break;
+  //   case 3:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
+  //     break;
+  //   case 4:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
+  //     break;
+  //   case 5:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
+  //     break;
+  //   case 6:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
+  //     break;
+  //   case 7:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
+  //     break;
+  //   }
+
   //char empty[] = "00000000";
   //empty[index] = '1';
   //GPIO_B = empty;
@@ -109,57 +114,59 @@ void WritePinInput(int index)
 void ReadInput()
 {
 
-  char value[] = "00000000";
+  //   char value[] = "00000000";
+  //
+  // 	GPIOC->ODR |=  (1 << (index+8));
+  //
+  //   if (value[0] == '1')
+  //   {
+  //     CurrentState = EMERGENCY;
+  //     CurrentLeverPosition = strong_braking;
+  //     _is_emergency_ON = 1;
+  //   }
 
-  if (value[0] == '1')
-  {
-    CurrentState = EMERGENCY;
-    CurrentLeverPosition = strong_braking;
-    _is_emergency_ON = 1;
-  }
+  //   if (value[1] == '1')
+  //   {
+  //     CurrentState = STOP;
+  //     CurrentLeverPosition = medium_braking;
+  //     _is_stop_ON = 1;
+  //   }
 
-  if (value[1] == '1')
-  {
-    CurrentState = STOP;
-    CurrentLeverPosition = medium_braking;
-    _is_stop_ON = 1;
-  }
+  //   if (value[2] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = strong_braking;
+  //   }
 
-  if (value[2] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = strong_braking;
-  }
+  //   if (value[3] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = medium_braking;
+  //   }
 
-  if (value[3] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = medium_braking;
-  }
+  //   if (value[4] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = minimum_braking;
+  //   }
 
-  if (value[4] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = minimum_braking;
-  }
+  //   if (value[5] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = no_acceleration;
+  //   }
 
-  if (value[5] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = no_acceleration;
-  }
+  //   if (value[6] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = minimum_acceleration;
+  //   }
 
-  if (value[6] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = minimum_acceleration;
-  }
-
-  if (value[7] == '1')
-  {
-    CurrentState = NORMAL;
-    CurrentLeverPosition = medium_acceleration;
-  }
+  //   if (value[7] == '1')
+  //   {
+  //     CurrentState = NORMAL;
+  //     CurrentLeverPosition = medium_acceleration;
+  //   }
 
   //if (value[8] == '1')
   //{
@@ -168,8 +175,9 @@ void ReadInput()
   //}
 }
 
-
 // OUTPUTS ------------------------------------------------
+
+unsigned int in_pin;
 
 void WritePinOutput(int index)
 {
@@ -177,36 +185,15 @@ void WritePinOutput(int index)
   {
     return;
   }
+	
+  in_pin = 1 << index;	
+  GPIOC->ODR |= in_pin;
 
-  switch (index)
-  {
-  case 0:
-    pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
-    break;
-  case 1:
-    pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
-    break;
-  case 2:
-    pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
-    break;
-  case 3:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
-    break;
-  case 4:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
-    break;
-  case 5:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
-    break;
-  case 6:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
-    break;
-  case 7:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
-    break;
-  }
+  // GPIOC->ODR |=  (1 << (index+8));
 
-  GPIO_C->ODR = pin_output_array;
+  // switch on initial LED position
+
+  //GPIO_C->ODR = pin_output_array;
 
   //char empty[] = "000000000000";
   //empty[index] = '1';
@@ -216,40 +203,41 @@ void WritePinOutput(int index)
 void WriteOutput(enum lever_position lever_Position)
 {
 
-  switch (lever_Position)
-  {
-  case minimum_acceleration:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
-    break;
+  // 	char pin_output_array[] = "00000000";
+  //
+  //   switch (lever_Position)
+  //   {
+  //   case minimum_acceleration:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
+  //     break;
 
-  case medium_acceleration:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
-    break;
+  //   case medium_acceleration:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
+  //     break;
 
-  case maximum_acceleration:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
-    break;
+  //   case maximum_acceleration:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
+  //     break;
 
-  case no_acceleration:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
-    break;
+  //   case no_acceleration:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
+  //     break;
 
-  case minimum_braking:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
-    break;
+  //   case minimum_braking:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
+  //     break;
 
-  case medium_braking:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
-    break;
+  //   case medium_braking:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
+  //     break;
 
-  case strong_braking:
-    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
-    break;
-  }
+  //   case strong_braking:
+  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
+  //     break;
+  //   }
 
-  GPIOB->ODR = pin_output_array;
+  //   GPIOB->ODR = pin_output_array;
 }
-
 
 // UTILITY ------------------------------------------------
 
@@ -262,8 +250,6 @@ void some_delay(unsigned long int n)
   }
 }
 
-
-
 // TASKS ------------------------------------------------
 
 // Defines TaskEventSimulator
@@ -275,106 +261,100 @@ __task void TaskEventSimulator(void)
     task_train_controller = 0;
     task_event_simulator = 1;
     IDLE = 0;
-    
-		WritePinOutput(0);
-		some_delay(1000);
-		
-		WritePinOutput(1);
-		some_delay(1000);
-		
-		WritePinOutput(2);
-		some_delay(1000);
-		
-		WritePinOutput(3);
-		some_delay(1000);
-		
-		WritePinOutput(4);
-		some_delay(1000);
-		
-		WritePinOutput(5);
-		some_delay(1000);
-		
-		WritePinOutput(6);
-		some_delay(1000);
-		
-		WritePinOutput(7);
-		some_delay(1000);
-		
-		WritePinOutput(8);
-		some_delay(1000);		
-	
-    os_dly_wait(2);
-    os_sem_send(sem); // Frees the semaphore
-		
+
+    WritePinOutput(0);
+    some_delay(100);
+
+    WritePinOutput(1);
+    some_delay(100);
+
+    WritePinOutput(2);
+    some_delay(100);
+
+    WritePinOutput(3);
+    some_delay(100);
+
+    WritePinOutput(4);
+    some_delay(100);
+
+    WritePinOutput(5);
+    some_delay(100);
+
+    WritePinOutput(6);
+    some_delay(100);
+
+    WritePinOutput(7);
+    some_delay(100);
+
+    WritePinOutput(8);
+    some_delay(100);
   }
 }
-
 
 // Defines TaskTrainController
 __task void TaskTrainController(void)
 {
   while (1)
   {
-    // Waits for the semaphore to be freed by TaskEventSimulator
-    os_sem_wait(sem, 0xFFFF);
     task_train_controller = 1;
     task_event_simulator = 0;
     IDLE = 0;
 
-    while (1)
+    ReadInput();
+
+    if (_is_emergency_ON)
     {
-      ReadInput();
-
-      if (_is_emergency_ON)
-      {
-        CurrentState = EMERGENCY;
-        CurrentLeverPosition = strong_braking;
-        continue;
-      }
-
-      if (_is_stop_ON)
-      {
-        CurrentState = STOP;
-        CurrentLeverPosition = medium_braking;
-        continue;
-      }
-
-      switch (CurrentState)
-      {
-
-      case EMERGENCY:
-        _is_emergency_ON = 1;
-        WriteOutput(strong_braking);
-        break;
-
-      case STOP:
-        _is_stop_ON = 1;
-        WriteOutput(medium_braking);
-        break;
-
-      case NORMAL:
-        WriteOutput(CurrentLeverPosition);
-        break;
-      }
+      CurrentState = EMERGENCY;
+      CurrentLeverPosition = strong_braking;
+      continue;
     }
 
-    some_delay(1000);
+    if (_is_stop_ON)
+    {
+      CurrentState = STOP;
+      CurrentLeverPosition = medium_braking;
+      continue;
+    }
+
+    switch (CurrentState)
+    {
+
+    case EMERGENCY:
+      _is_emergency_ON = 1;
+      WriteOutput(strong_braking);
+      break;
+
+    case STOP:
+      _is_stop_ON = 1;
+      WriteOutput(medium_braking);
+      break;
+
+    case NORMAL:
+      WriteOutput(CurrentLeverPosition);
+      break;
+    }
   }
 }
-
 
 // Defines TaskInit
 __task void TaskInit(void)
 {
   os_sem_init(sem, 0); // Initializes the semaphore
   os_tsk_create(TaskEventSimulator, 1);
-  os_tsk_create(TaskTrainController, 10);
+  //os_tsk_create(TaskTrainController, 10);
   os_tsk_delete_self(); // kills self
 }
 
 // Main
 int main(void)
 {
+  /* Enable GPIOB clock            */
+  RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+
+  // equivalent to RCC->APB2ENR |= (1UL << 3);
+  /* PB.8 defined as Output, PB.15 as Input  */
+  GPIOC->CRH = 0x80000003;
+  
   // Starts TaskInit which, in turn,
   // creates the two tasks TaskEventSimulator and TaskTrainController
   os_sys_init(TaskInit);
