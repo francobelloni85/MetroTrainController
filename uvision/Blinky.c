@@ -230,37 +230,37 @@ __task void TaskEventSimulator(void)
 
     os_dly_wait(2);
 
-    WritePin_GPIOC(2);
+    WritePin_GPIOB(2);
     some_delay(100);
 
-    WritePin_GPIOC(3);
+    WritePin_GPIOB(3);
     some_delay(100);
 
-    WritePin_GPIOC(4);
+    WritePin_GPIOB(4);
     some_delay(100);
 
-    WritePin_GPIOC(5);
+    WritePin_GPIOB(5);
     some_delay(100);
 
-    WritePin_GPIOC(6);
+    WritePin_GPIOB(6);
     some_delay(100);
 
-    WritePin_GPIOC(7);
+    WritePin_GPIOB(7);
     some_delay(100);
 
-    WritePin_GPIOC(1);
+    WritePin_GPIOB(1);
     some_delay(100);
 
-    WritePin_GPIOC(8);
+    WritePin_GPIOB(8);
     some_delay(100);
 
-    WritePin_GPIOC(0);
+    WritePin_GPIOB(0);
     some_delay(100);
 
-    WritePin_GPIOC(8);
+    WritePin_GPIOB(8);
     some_delay(100);
 
-    WritePin_GPIOC(1);
+    WritePin_GPIOB(1);
     some_delay(100);
 
     os_sem_send(sem); // Frees the semaphore
