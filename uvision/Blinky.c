@@ -66,117 +66,92 @@ int _is_stop_ON = 0;
 // Declares a semaphore
 OS_SEM sem;
 
-unsigned int in_pin;
+unsigned int in_pin_b;
+unsigned int in_pin_c;
 
 char pin_input_array[];
 
-// INPUTS ------------------------------------------------
-
-void WritePinInput(int index)
-{
-  if (index > 8 || index < 0)
-  {
-    return;
-  }
-
-  // 	char pin_output_array[] = "00000000";
-  //
-  // 	switch (index)
-  //   {
-  //   case 0:
-  //     pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
-  //     break;
-  //   case 1:
-  //     pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
-  //     break;
-  //   case 2:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
-  //     break;
-  //   case 3:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
-  //     break;
-  //   case 4:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
-  //     break;
-  //   case 5:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
-  //     break;
-  //   case 6:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
-  //     break;
-  //   case 7:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
-  //     break;
-  //   }
-
-  //char empty[] = "00000000";
-  //empty[index] = '1';
-  //GPIO_B = empty;
-}
+// GPIO_B ------------------------------------------------
 
 void ReadInput()
 {
 
-  if (GPIOC->IDR & 0)
+  if (GPIOB->IDR & 0)
   {
     CurrentState = EMERGENCY;
     CurrentLeverPosition = strong_braking;
     _is_emergency_ON = 1;
   }
 
-  if (GPIOC->IDR & 1)
+  if (GPIOB->IDR & 1)
   {
     CurrentState = STOP;
     CurrentLeverPosition = medium_braking;
     _is_stop_ON = 1;
   }
 
-  if (GPIOC->IDR & 2)
+  if (GPIOB->IDR & 2)
   {
     CurrentState = NORMAL;
     CurrentLeverPosition = strong_braking;
   }
 
-  if (GPIOC->IDR & 3)
+  if (GPIOB->IDR & 3)
   {
     CurrentState = NORMAL;
     CurrentLeverPosition = medium_braking;
   }
 
-  //   if (value[4] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = minimum_braking;
-  //   }
+  if (GPIOB->IDR & 4)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = minimum_braking;
+  }
 
-  //   if (value[5] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = no_acceleration;
-  //   }
+  if (GPIOB->IDR & 5)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = no_acceleration;
+  }
 
-  //   if (value[6] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = minimum_acceleration;
-  //   }
+  if (GPIOB->IDR & 6)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = minimum_acceleration;
+  }
 
-  //   if (value[7] == '1')
-  //   {
-  //     CurrentState = NORMAL;
-  //     CurrentLeverPosition = medium_acceleration;
-  //   }
+  if (GPIOB->IDR & 7)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = medium_acceleration;
+  }
 
-  //if (value[8] == '1')
-  //{
-  //    CurrentState = state.NORMAL;
-  //    CurrentLeverPosition = lever_position.maximum_acceleration;
-  //}
+  if (GPIOB->IDR & 8)
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = maximum_acceleration;
+  }
+
 }
 
-// OUTPUTS ------------------------------------------------
+void WritePin_GPIOB(int index)
+{
+  if (index > 12 || index < 0)
+  {
+    return;
+  }
 
-void WritePinOutput(int index)
+  // Reset the last value
+  GPIOB->ODR = 0x00000000;
+
+  // Set the new value
+  in_pin_b = 1 << index;
+  GPIOB->ODR |= in_pin_b;
+}
+
+// GPIO_C ------------------------------------------------
+
+void WritePin_GPIOC(int index)
 {
   if (index > 12 || index < 0)
   {
@@ -187,47 +162,47 @@ void WritePinOutput(int index)
   GPIOC->ODR = 0x00000000;
 
   // Set the new value
-  in_pin = 1 << index;
-  GPIOC->ODR |= in_pin;
+  in_pin_c = 1 << index;
+  GPIOC->ODR |= in_pin_c;
 }
 
 void WriteOutput(enum lever_position lever_Position)
 {
+    int pin = 0;
 
-  // 	char pin_output_array[] = "00000000";
-  //
-  //   switch (lever_Position)
-  //   {
-  //   case minimum_acceleration:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
-  //     break;
+    switch (lever_Position)
+    {
+    case minimum_acceleration:
+       pin = 2;
+      break;
 
-  //   case medium_acceleration:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
-  //     break;
+    case medium_acceleration:
+       pin = 1;
+      break;
 
-  //   case maximum_acceleration:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
-  //     break;
+    case maximum_acceleration:
+      pin = 0;
+      break;
 
-  //   case no_acceleration:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
-  //     break;
+    case no_acceleration:
+       pin = 4;
+      break;
 
-  //   case minimum_braking:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
-  //     break;
+    case minimum_braking:
+       pin = 9;
+      break;
 
-  //   case medium_braking:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
-  //     break;
+    case medium_braking:
+       pin = 10;
+      break;
 
-  //   case strong_braking:
-  //     pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
-  //     break;
-  //   }
+    case strong_braking:
+       pin = 11;
+      break;
+    }
 
-  //   GPIOB->ODR = pin_output_array;
+    WritePin_GPIOC(pin);
+
 }
 
 // UTILITY ------------------------------------------------
@@ -255,41 +230,40 @@ __task void TaskEventSimulator(void)
 
     os_dly_wait(2);
 
-    WritePinOutput(2);
+    WritePin_GPIOC(2);
     some_delay(100);
 
-    WritePinOutput(3);
+    WritePin_GPIOC(3);
     some_delay(100);
 
-    WritePinOutput(4);
+    WritePin_GPIOC(4);
     some_delay(100);
 
-    WritePinOutput(5);
+    WritePin_GPIOC(5);
     some_delay(100);
 
-    WritePinOutput(6);
+    WritePin_GPIOC(6);
     some_delay(100);
 
-    WritePinOutput(7);
+    WritePin_GPIOC(7);
     some_delay(100);
 
-    WritePinOutput(1);
+    WritePin_GPIOC(1);
     some_delay(100);
 
-    WritePinOutput(8);
+    WritePin_GPIOC(8);
     some_delay(100);
 
-    WritePinOutput(0);
+    WritePin_GPIOC(0);
     some_delay(100);
 
-    WritePinOutput(8);
+    WritePin_GPIOC(8);
     some_delay(100);
 
-    WritePinOutput(1);
+    WritePin_GPIOC(1);
     some_delay(100);
 
-    os_sem_send( sem ); // Frees the semaphore
-
+    os_sem_send(sem); // Frees the semaphore
   }
 }
 
@@ -323,12 +297,12 @@ __task void TaskTrainController(void)
 
     case EMERGENCY:
       _is_emergency_ON = 1;
-      WriteOutput(strong_braking);
+      WritePin_GPIOC(12);
       break;
 
     case STOP:
       _is_stop_ON = 1;
-      WriteOutput(medium_braking);
+      WritePin_GPIOC(medium_braking);
       break;
 
     case NORMAL:
@@ -336,8 +310,7 @@ __task void TaskTrainController(void)
       break;
     }
 
-    os_sem_wait( sem, 0xFFFF ); 
-
+    os_sem_wait(sem, 0xFFFF);
   }
 }
 
