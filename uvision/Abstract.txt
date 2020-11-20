@@ -23,3 +23,7 @@ The program is available in different targets:
 
 Microcontrollore:
 STM32f103RB
+
+
+// Registri
+https://stackoverflow.com/questions/54735239/programing-stm32-like-stm8register-level-gpio
