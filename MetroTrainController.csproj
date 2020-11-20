@@ -7,8 +7,11 @@
 
   <ItemGroup>
     <Compile Remove="code\**" />
+    <Compile Remove="uvision\Obj\**" />
     <EmbeddedResource Remove="code\**" />
+    <EmbeddedResource Remove="uvision\Obj\**" />
     <None Remove="code\**" />
+    <None Remove="uvision\Obj\**" />
   </ItemGroup>
 
   <ItemGroup>

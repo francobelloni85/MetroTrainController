@@ -387,10 +387,6 @@ namespace MetroTrainController
                     break;
 
             }
-
-
-
-
         }
 
         /// <summary>

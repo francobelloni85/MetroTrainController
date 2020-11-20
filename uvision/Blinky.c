@@ -7,6 +7,7 @@
 #include <RTL.h>       /* RTX kernel functions & defines      */
 
 #define GIGI_USE_ODR 999
+#define BIN_TO_BYTE(b7, b6, b5, b4, b3, b2, b1, b0) ((b7 << 7) + (b6 << 6) + (b5 << 5) + (b4 << 4) + (b3 << 3) + (b2 << 2) + (b1 << 1) + b0)
 
 enum state
 {
@@ -58,38 +59,117 @@ int _is_emergency_ON = 0;
 /// </summary>
 int _is_stop_ON = 0;
 
+// Declares a semaphore
+OS_SEM sem;
+
+char pin_output_array;
+char pin_input_array;
+
+// INPUTS ------------------------------------------------
+
 void WritePinInput(int index)
 {
   if (index > 8 || index < 0)
   {
     return;
   }
+	switch (index)
+  {
+  case 0:
+    pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
+    break;
+  case 1:
+    pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
+    break;
+  case 2:
+    pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
+    break;
+  case 3:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
+    break;
+  case 4:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
+    break;
+  case 5:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
+    break;
+  case 6:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
+    break;
+  case 7:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
+    break;
+  }
+	
   //char empty[] = "00000000";
   //empty[index] = '1';
   //GPIO_B = empty;
 }
 
-void WriteInput(enum state my_state, enum lever_position my_lever_position)
+void ReadInput()
 {
-  int int_state = (int)my_state;
-  int int_lever_position = (int)my_lever_position;
 
-  switch (int_state)
+  char value[] = "00000000";
+
+  if (value[0] == '1')
   {
-  case 1:
-    //state.NORMAL:
-    WritePinInput(int_lever_position);
-    break;
-  case 2:
-    // state.EMERGENCY:
-    WritePinInput(0);
-    break;
-  case 3:
-    // state.STOP:
-    WritePinInput(1);
-    break;
+    CurrentState = EMERGENCY;
+    CurrentLeverPosition = strong_braking;
+    _is_emergency_ON = 1;
   }
+
+  if (value[1] == '1')
+  {
+    CurrentState = STOP;
+    CurrentLeverPosition = medium_braking;
+    _is_stop_ON = 1;
+  }
+
+  if (value[2] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = strong_braking;
+  }
+
+  if (value[3] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = medium_braking;
+  }
+
+  if (value[4] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = minimum_braking;
+  }
+
+  if (value[5] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = no_acceleration;
+  }
+
+  if (value[6] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = minimum_acceleration;
+  }
+
+  if (value[7] == '1')
+  {
+    CurrentState = NORMAL;
+    CurrentLeverPosition = medium_acceleration;
+  }
+
+  //if (value[8] == '1')
+  //{
+  //    CurrentState = state.NORMAL;
+  //    CurrentLeverPosition = lever_position.maximum_acceleration;
+  //}
 }
+
+
+// OUTPUTS ------------------------------------------------
 
 void WritePinOutput(int index)
 {
@@ -98,10 +178,80 @@ void WritePinOutput(int index)
     return;
   }
 
+  switch (index)
+  {
+  case 0:
+    pin_output_array = BIN_TO_BYTE(1, 0, 0, 0, 0, 0, 0, 0);
+    break;
+  case 1:
+    pin_output_array = BIN_TO_BYTE(0, 1, 0, 0, 0, 0, 0, 0);
+    break;
+  case 2:
+    pin_output_array = BIN_TO_BYTE(0, 0, 1, 0, 0, 0, 0, 0);
+    break;
+  case 3:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
+    break;
+  case 4:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
+    break;
+  case 5:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
+    break;
+  case 6:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
+    break;
+  case 7:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
+    break;
+  }
+
+  GPIO_C->ODR = pin_output_array;
+
   //char empty[] = "000000000000";
   //empty[index] = '1';
   //GPIO_C = empty;
 }
+
+void WriteOutput(enum lever_position lever_Position)
+{
+
+  switch (lever_Position)
+  {
+  case minimum_acceleration:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 1, 0, 0, 0, 0);
+    break;
+
+  case medium_acceleration:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 1, 0, 0, 0);
+    break;
+
+  case maximum_acceleration:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 1, 0, 0);
+    break;
+
+  case no_acceleration:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 1, 0);
+    break;
+
+  case minimum_braking:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 1);
+    break;
+
+  case medium_braking:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
+    break;
+
+  case strong_braking:
+    pin_output_array = BIN_TO_BYTE(0, 0, 0, 0, 0, 0, 0, 0);
+    break;
+  }
+
+  GPIOB->ODR = pin_output_array;
+}
+
+
+// UTILITY ------------------------------------------------
 
 void some_delay(unsigned long int n)
 {
@@ -112,8 +262,9 @@ void some_delay(unsigned long int n)
   }
 }
 
-// Declares a semaphore
-OS_SEM sem;
+
+
+// TASKS ------------------------------------------------
 
 // Defines TaskEventSimulator
 __task void TaskEventSimulator(void)
@@ -124,14 +275,42 @@ __task void TaskEventSimulator(void)
     task_train_controller = 0;
     task_event_simulator = 1;
     IDLE = 0;
+    
+		WritePinOutput(0);
+		some_delay(1000);
+		
+		WritePinOutput(1);
+		some_delay(1000);
+		
+		WritePinOutput(2);
+		some_delay(1000);
+		
+		WritePinOutput(3);
+		some_delay(1000);
+		
+		WritePinOutput(4);
+		some_delay(1000);
+		
+		WritePinOutput(5);
+		some_delay(1000);
+		
+		WritePinOutput(6);
+		some_delay(1000);
+		
+		WritePinOutput(7);
+		some_delay(1000);
+		
+		WritePinOutput(8);
+		some_delay(1000);		
+	
     os_dly_wait(2);
-    some_delay(1000);
     os_sem_send(sem); // Frees the semaphore
+		
   }
 }
 
-// Defines TaskTrainController
 
+// Defines TaskTrainController
 __task void TaskTrainController(void)
 {
   while (1)
@@ -141,9 +320,48 @@ __task void TaskTrainController(void)
     task_train_controller = 1;
     task_event_simulator = 0;
     IDLE = 0;
+
+    while (1)
+    {
+      ReadInput();
+
+      if (_is_emergency_ON)
+      {
+        CurrentState = EMERGENCY;
+        CurrentLeverPosition = strong_braking;
+        continue;
+      }
+
+      if (_is_stop_ON)
+      {
+        CurrentState = STOP;
+        CurrentLeverPosition = medium_braking;
+        continue;
+      }
+
+      switch (CurrentState)
+      {
+
+      case EMERGENCY:
+        _is_emergency_ON = 1;
+        WriteOutput(strong_braking);
+        break;
+
+      case STOP:
+        _is_stop_ON = 1;
+        WriteOutput(medium_braking);
+        break;
+
+      case NORMAL:
+        WriteOutput(CurrentLeverPosition);
+        break;
+      }
+    }
+
     some_delay(1000);
   }
 }
+
 
 // Defines TaskInit
 __task void TaskInit(void)
