@@ -540,8 +540,24 @@ __task void TaskTrainController(void)
 
     if (_is_stop_ON || CurrentState == STOP)
     {
-      CurrentState = STOP;
-      WritePin_GPIOC(medium_braking);
+      // There is the STOP signal
+      if (_is_stop_ON)
+      {
+        CurrentState = STOP;
+        WritePin_GPIOC(medium_braking);
+        continue;
+      }
+      else
+      {
+        // there is no more the stop sign 
+        // and the lever is in position 0
+        // -> it is possible to exit from the STOP situation
+        if (CurrentLeverPosition == no_acceleration)
+        {
+            CurrentState = NORMAL;                      
+        }
+      }
+      // Exit here and do not continue if in the stop state
       continue;
     }
 
