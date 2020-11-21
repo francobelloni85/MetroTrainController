@@ -79,10 +79,10 @@ int is_stop_ON = 0;
 // it is set to true if the time limit in position 3 of the speed has been exceeded
 int is_max_speed_limt = 0;
 
-// it is set to true when the user is in the position "max_speed"
-int start_max_speed_limt = 0;
 
 int count_max_speed_limt_tick = 0;
+
+int sleep_timer_tick  = 3;
 
 // GPIOx ADDRESS ------------------------------------------------------------
 
@@ -123,19 +123,24 @@ int GPIOB_debug_stop_pin = 0;
 // the CurrentLeverPosition
 void ReadInput()
 {
-
+	
+	// Count the pins 	
   int count_signal = 0;
-
-  // Pin 0
+	
+	// Reset the allarm
+	is_emergency_ON = 0;
+	is_stop_ON = 0;
+	
+  // Pin 0 (EMERGENCY)
   read_pin = 0x00000001;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
   {
     is_emergency_ON = 1;
   }
 
-  // Pin 1
+  // Pin 1 (STOP)
   read_pin = 0x00000002;
-  if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
+  if (GPIOB->IDR & read_pin || GPIOB_debug_stop_pin == 1)
   {
     is_stop_ON = 1;
   }
@@ -196,7 +201,7 @@ void ReadInput()
     count_signal++;
   }
 
-  if (count_signal > 2)
+  if (count_signal > 3)
   {
     // Qualcosa non va
     count_signal = -1;
@@ -209,6 +214,7 @@ void ReadInput()
     read_pin = 12;
   }
 }
+
 
 void WritePin_GPIOB(int index)
 {
@@ -227,57 +233,57 @@ void WritePin_GPIOB(int index)
   // 3) Write the signal in the GPIOB
 
   // ALLARM SIGNAL
-  if (index == 0x00000000 || index == 0)
+  if (index == 0x00000000 || index == PIN_ALLARM_SIGNAL )
   {
     *odr_B = 0x00000001;
     GPIOB_debug_emergency_pin = 1;
   }
 
   // STOP SIGNAL
-  if (index == 0x00000001 || index == 1)
+  if (index == 0x00000001 || index == PIN_STOP_SIGNAL )
   {
     *odr_B = 0x00000002;
     GPIOB_debug_stop_pin = 1;
   }
 
   // STRONG_BRAKING
-  if (index == 0x00000002 || index == 2)
+  if (index == 0x00000002 || index == PIN_STRONG_BRAKING )
   {
     *odr_B = 0x00000004;
   }
 
   // MEDIUM_BRAKING
-  if (index == 0x00000003)
+  if (index == 0x00000003 || index == PIN_MEDIUM_BRAKING )
   {
     *odr_B = 0x00000008;
   }
 
   // MINIMUM_BRAKING
-  if (index == 0x00000004)
+  if (index == 0x00000004 || index == PIN_MINIMUM_BRAKING )
   {
     *odr_B = 0x00000010;
   }
 
   // NO_ACCELERATION_NO_BRAKING
-  if (index == 0x00000005)
+  if (index == 0x00000005 || index == PIN_NO_ACCELERATION_NO_BRAKING )
   {
     *odr_B = 0x00000020;
   }
 
   // MINIMUM_ACCELERATION
-  if (index == 0x00000006)
+  if (index == 0x00000006 || index == PIN_MINIMUM_ACCELERATION  )
   {
     *odr_B = 0x00000040;
   }
 
   // MEDIUM_ACCELERATION
-  if (index == 0x00000007)
+  if (index == 0x00000007 || index == PIN_MEDIUM_ACCELERATION)
   {
     *odr_B = 0x00000080;
   }
 
   // MAXIMUM_ACCELERATION
-  if (index == 0x00000008)
+  if (index == 0x00000008 || index == PIN_MAXIMUM_ACCELERATION)
   {
     *odr_B = 0x00000100;
   }
@@ -289,6 +295,8 @@ void WritePin_GPIOB(int index)
   //in_pin_b = 1 << index;
   //GPIOB->ODR |= in_pin_b;
 }
+
+
 
 void WriteInterruptSignal_GPIOB(int index)
 {
@@ -313,28 +321,6 @@ void WriteInterruptSignal_GPIOB(int index)
   }
 }
 
-void ResertInterruptSignal_GPIOB(int index)
-{
-
-  if (index > 2 || index < 0)
-  {
-    return;
-  }
-
-  // ALLARM SIGNAL
-  if (index == 0x00000000 || index == 0)
-  {
-    *odr_B = 0x00000000;
-    GPIOB_debug_emergency_pin = 0;
-  }
-
-  // STOP SIGNAL
-  if (index == 0x00000001 || index == 1)
-  {
-    *odr_B = 0x00000000;
-    GPIOB_debug_stop_pin = 0;
-  }
-}
 
 // GPIO_C -----------------------------------------------------------------
 
@@ -412,6 +398,9 @@ void WaitTaskEventSimulatorVariables(int system_tick)
   IDLE = 0;
 }
 
+
+
+
 // Defines TaskEventSimulator
 __task void TaskEventSimulator(void)
 {
@@ -425,33 +414,33 @@ __task void TaskEventSimulator(void)
 
     // TEST 1  - READ AND WRITE SIGNAL --------------
 
-    WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
+//     WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_MINIMUM_ACCELERATION);
+//     WritePin_GPIOB(PIN_MINIMUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+//     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
+//     WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_MINIMUM_BRAKING);
+//     WritePin_GPIOB(PIN_MINIMUM_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_MEDIUM_BRAKING);
+//     WritePin_GPIOB(PIN_MEDIUM_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    WritePin_GPIOB(PIN_STRONG_BRAKING);
+//     WritePin_GPIOB(PIN_STRONG_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
+//     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // TEST 2  - STOP SIGNAL --------------
 
@@ -463,54 +452,59 @@ __task void TaskEventSimulator(void)
 
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    // 2B -> MI ARRIVA IL SEGNALE DI STOP
+    // 2B -> MANDO IL SEGNALE DI STOP
     WriteInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 2C -> PROVO AD USCIRE DALLO STOP
-    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+		// SETTO LA VELOCITA A MEDIA MA TENGO IL SEGNALE DI STOP
+		*odr_B = 0x00000042;
+		GPIOB_debug_pin = PIN_MEDIUM_ACCELERATION;	 
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 2D -> TOLGO IL SEGNALE DI STOP
-    ResertInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
+    *odr_B = 0x00000000;
+    GPIOB_debug_stop_pin = 0;
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 2E -> RI-PROVO AD USCIRE DALLO STOP
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 2F -> PORTO LA LEVA IN POSIZIONE CORRETTA
     WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 2G -> RI-RI-PROVO AD USCIRE DALLO STOP
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // TEST 3  - VELOCITA A 3 PER TROPPO TEMPO --------------
 
     WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(200);
 
     WritePin_GPIOB(PIN_MINIMUM_BRAKING);
 
-    WaitTaskEventSimulatorVariables(100);
-
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
+		
+		continue;
+		
     // TEST 4  - SEGNALE DI EMERGENZA --------------
 
     // 4A -> SEGNALE DI ALLARME
     WritePin_GPIOB(PIN_ALLARM_SIGNAL);
 
-    WaitTaskEventSimulatorVariables(100);
+    WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 4B -> PROVO INUTILMENTE AD USCIRE DALL'ALLARME
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
@@ -520,7 +514,15 @@ __task void TaskEventSimulator(void)
 int count_task_train_controller = 0;
 
 
-
+void ExitTaskTrainController()
+{
+	// Needed in the debug to go to sleep
+		count_task_train_controller++;
+		if(count_task_train_controller >= 20){
+			count_task_train_controller = 0;
+			os_dly_wait(1);			
+		}	
+}
 
 // Defines TaskTrainController
 __task void TaskTrainController(void)
@@ -539,8 +541,8 @@ __task void TaskTrainController(void)
     if (is_emergency_ON)
     {
       CurrentState = EMERGENCY;
-      CurrentLeverPosition = strong_braking;
-      os_sem_wait(sem, 0xFFFF);
+      CurrentLeverPosition = strong_braking;     
+			ExitTaskTrainController();			
       continue;
     }
 
@@ -551,6 +553,7 @@ __task void TaskTrainController(void)
       {
         CurrentState = STOP;
         WritePin_GPIOC(medium_braking);
+				ExitTaskTrainController();
         continue;
       }
       else
@@ -565,17 +568,21 @@ __task void TaskTrainController(void)
       }
 
       // Exit here and do not continue if in the stop state
+			ExitTaskTrainController();
       continue;
     }
 
-    // Se sono in posizione di max speed aumento di un tick (10ms circa)
+    
+		
+		
+		// Se sono in posizione di max speed aumento di un tick (10ms circa)
     // Se ho raggiunto i 24,000 tick (4 secondi circa) allora devo
     // forzare e diminuire la velocita.
     // Ogni altro segnale della leva resetta il contatore.
     if (CurrentLeverPosition == maximum_acceleration)
     {
       count_max_speed_limt_tick++;
-      if (start_max_speed_limt > 24000)
+      if (count_max_speed_limt_tick > 180)
       {
         is_max_speed_limt = 1;
       }
@@ -590,19 +597,14 @@ __task void TaskTrainController(void)
     if (is_max_speed_limt == 1)
     {
       WriteLeveOutput(medium_acceleration);
+			ExitTaskTrainController();
       continue;
     }
 
     // I'm in the normal condition
     // Just "read and write"
-    WriteLeveOutput(CurrentLeverPosition);
-		
-		// Needed int the debug to go to sleep
-		count_task_train_controller++;
-		if(count_task_train_controller >= 20){
-			os_dly_wait(20);
-			count_task_train_controller = 0;
-		}	
+    WriteLeveOutput(CurrentLeverPosition);		
+		ExitTaskTrainController();
 		
   }
 }
