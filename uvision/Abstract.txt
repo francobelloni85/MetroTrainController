@@ -25,5 +25,9 @@ Microcontrollore:
 STM32f103RB
 
 
-// Registri
+Registri
 https://stackoverflow.com/questions/54735239/programing-stm32-like-stm8register-level-gpio
+
+
+Tick
+http://www.handsonembedded.com/stm32f103-spl-tutorial-4/n

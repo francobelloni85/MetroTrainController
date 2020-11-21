@@ -69,12 +69,20 @@ enum lever_position CurrentLeverPosition;
 /// <summary>
 /// Is set to true if the emergency button has been pressed
 /// </summary>
-int _is_emergency_ON = 0;
+int is_emergency_ON = 0;
 
 /// <summary>
 /// Is set to true if the emergency stop has been pressed
 /// </summary>
-int _is_stop_ON = 0;
+int is_stop_ON = 0;
+
+// it is set to true if the time limit in position 3 of the speed has been exceeded
+int is_max_speed_limt = 0;
+
+// it is set to true when the user is in the position "max_speed"
+int start_max_speed_limt = 0;
+
+int count_max_speed_limt_tick = 0;
 
 // GPIOx ADDRESS ------------------------------------------------------------
 
@@ -105,11 +113,13 @@ int GPIOB_debug_stop_pin = 0;
 
 // END DEBUG VARIABLES
 
+// TIMER
+
 // GPIO_B -------------------------------------------------------------------
 
 // This class read the inputs
 // and set:
-// the allarm pin _is_emergency_ON or _is_stop_ON
+// the allarm pin _is_emergency_ON or is_stop_ON
 // the CurrentLeverPosition
 void ReadInput()
 {
@@ -120,14 +130,14 @@ void ReadInput()
   read_pin = 0x00000001;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
   {
-    _is_emergency_ON = 1;
+    is_emergency_ON = 1;
   }
 
   // Pin 1
   read_pin = 0x00000002;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
   {
-    _is_stop_ON = 1;
+    is_stop_ON = 1;
   }
 
   // Pin 2
@@ -394,54 +404,54 @@ void some_delay(unsigned long int n)
 
 // TASKS ----------------------------------------------------------
 
+void WaitTaskEventSimulatorVariables(int system_tick)
+{
+  os_dly_wait(system_tick);
+  task_train_controller = 0;
+  task_event_simulator = 1;
+  IDLE = 0;
+}
+
 // Defines TaskEventSimulator
 __task void TaskEventSimulator(void)
 {
 
   while (1)
   {
+
     task_train_controller = 0;
     task_event_simulator = 1;
     IDLE = 0;
 
-    //os_dly_wait(2);
-
     // TEST 1  - READ AND WRITE SIGNAL --------------
 
     WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MINIMUM_ACCELERATION);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MINIMUM_BRAKING);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MEDIUM_BRAKING);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_STRONG_BRAKING);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // TEST 2  - STOP SIGNAL --------------
 
@@ -452,96 +462,92 @@ __task void TaskEventSimulator(void)
     // 2A -> VADO A VELOCITA MEDIA  --------------
 
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(100);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2B -> MI ARRIVA IL SEGNALE DI STOP
     WriteInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2C -> PROVO AD USCIRE DALLO STOP
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(100);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2D -> TOLGO IL SEGNALE DI STOP
     ResertInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2E -> RI-PROVO AD USCIRE DALLO STOP
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(500);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2F -> PORTO LA LEVA IN POSIZIONE CORRETTA
     WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
-    some_delay(500);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 2G -> RI-RI-PROVO AD USCIRE DALLO STOP
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(500);
+
+    WaitTaskEventSimulatorVariables(100);
 
     // TEST 3  - VELOCITA A 3 PER TROPPO TEMPO --------------
 
-    os_sem_send(sem); // Frees the semaphore
-
     WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
-    some_delay(8000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     WritePin_GPIOB(PIN_MINIMUM_BRAKING);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // TEST 4  - SEGNALE DI EMERGENZA --------------
 
     // 4A -> SEGNALE DI ALLARME
     WritePin_GPIOB(PIN_ALLARM_SIGNAL);
-    some_delay(1000);
 
-    os_sem_send(sem); // Frees the semaphore
+    WaitTaskEventSimulatorVariables(100);
 
     // 4B -> PROVO INUTILMENTE AD USCIRE DALL'ALLARME
     WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
-    some_delay(1000);
-
-    os_sem_send(sem); // Frees the semaphore
   }
 }
+
+int count_task_train_controller = 0;
+
+
+
 
 // Defines TaskTrainController
 __task void TaskTrainController(void)
 {
   while (1)
   {
+    // TODO Testare qui il semaforo
+    // os_sem_wait(sem, 0xFFFF);
+
     task_train_controller = 1;
     task_event_simulator = 0;
     IDLE = 0;
 
     ReadInput();
 
-    if (_is_emergency_ON)
+    if (is_emergency_ON)
     {
       CurrentState = EMERGENCY;
       CurrentLeverPosition = strong_braking;
+      os_sem_wait(sem, 0xFFFF);
       continue;
     }
 
-    if (_is_stop_ON || CurrentState == STOP)
+    if (is_stop_ON || CurrentState == STOP)
     {
       // There is the STOP signal
-      if (_is_stop_ON)
+      if (is_stop_ON)
       {
         CurrentState = STOP;
         WritePin_GPIOC(medium_braking);
@@ -549,23 +555,55 @@ __task void TaskTrainController(void)
       }
       else
       {
-        // there is no more the stop sign 
+        // there is no more the stop sign
         // and the lever is in position 0
         // -> it is possible to exit from the STOP situation
         if (CurrentLeverPosition == no_acceleration)
         {
-            CurrentState = NORMAL;                      
+          CurrentState = NORMAL;
         }
       }
+
       // Exit here and do not continue if in the stop state
+      continue;
+    }
+
+    // Se sono in posizione di max speed aumento di un tick (10ms circa)
+    // Se ho raggiunto i 24,000 tick (4 secondi circa) allora devo
+    // forzare e diminuire la velocita.
+    // Ogni altro segnale della leva resetta il contatore.
+    if (CurrentLeverPosition == maximum_acceleration)
+    {
+      count_max_speed_limt_tick++;
+      if (start_max_speed_limt > 24000)
+      {
+        is_max_speed_limt = 1;
+      }
+    }
+    else
+    {
+      count_max_speed_limt_tick = 0;
+      is_max_speed_limt = 0;
+    }
+
+    // if the time limit in position 3 of the speed has been exceeded
+    if (is_max_speed_limt == 1)
+    {
+      WriteLeveOutput(medium_acceleration);
       continue;
     }
 
     // I'm in the normal condition
     // Just "read and write"
     WriteLeveOutput(CurrentLeverPosition);
-
-    os_sem_wait(sem, 0xFFFF);
+		
+		// Needed int the debug to go to sleep
+		count_task_train_controller++;
+		if(count_task_train_controller >= 20){
+			os_dly_wait(20);
+			count_task_train_controller = 0;
+		}	
+		
   }
 }
 
@@ -575,9 +613,9 @@ __task void TaskInit(void)
   // Initializes the semaphore
   os_sem_init(sem, 0);
 
-  os_tsk_create(TaskEventSimulator, 1);
+  os_tsk_create(TaskEventSimulator, 100);
 
-  os_tsk_create(TaskTrainController, 5);
+  os_tsk_create(TaskTrainController, 50);
 
   // kills self
   os_tsk_delete_self();
