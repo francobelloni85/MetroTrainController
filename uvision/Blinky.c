@@ -107,14 +107,19 @@ int GPIOB_debug_stop_pin = 0;
 
 // GPIO_B -------------------------------------------------------------------
 
+// This class read the inputs
+// and set:
+// the allarm pin _is_emergency_ON or _is_stop_ON
+// the CurrentLeverPosition
 void ReadInput()
 {
+
+  int count_signal = 0;
+
   // Pin 0
   read_pin = 0x00000001;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
   {
-    CurrentState = EMERGENCY;
-    CurrentLeverPosition = strong_braking;
     _is_emergency_ON = 1;
   }
 
@@ -122,8 +127,6 @@ void ReadInput()
   read_pin = 0x00000002;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
   {
-    CurrentState = STOP;
-    CurrentLeverPosition = medium_braking;
     _is_stop_ON = 1;
   }
 
@@ -131,56 +134,62 @@ void ReadInput()
   read_pin = 0x00000004;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_STRONG_BRAKING)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = strong_braking;
+    count_signal++;
   }
 
   // Pin 3
   read_pin = 0x00000008;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_MEDIUM_BRAKING)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = medium_braking;
+    count_signal++;
   }
 
   // Pin 4
   read_pin = 0x00000010;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_MINIMUM_BRAKING)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = minimum_braking;
+    count_signal++;
   }
 
   // Pin 5
   read_pin = 0x00000020;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_NO_ACCELERATION_NO_BRAKING)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = no_acceleration;
+    count_signal++;
   }
 
   // Pin 6
   read_pin = 0x00000040;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_MINIMUM_ACCELERATION)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = minimum_acceleration;
+    count_signal++;
   }
 
   // Pin 7
   read_pin = 0x00000080;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_MEDIUM_ACCELERATION)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = medium_acceleration;
+    count_signal++;
   }
 
   // Pin 8
   read_pin = 0x00000100;
   if (GPIOB->IDR & read_pin || GPIOB_debug_pin == PIN_MAXIMUM_ACCELERATION)
   {
-    CurrentState = NORMAL;
     CurrentLeverPosition = maximum_acceleration;
+    count_signal++;
+  }
+
+  if (count_signal > 2)
+  {
+    // Qualcosa non va
+    count_signal = -1;
   }
 
   // DEBUG TEST LETTURA
@@ -271,6 +280,52 @@ void WritePin_GPIOB(int index)
   //GPIOB->ODR |= in_pin_b;
 }
 
+void WriteInterruptSignal_GPIOB(int index)
+{
+
+  if (index > 2 || index < 0)
+  {
+    return;
+  }
+
+  // ALLARM SIGNAL
+  if (index == 0x00000000 || index == 0)
+  {
+    *odr_B = 0x00000001;
+    GPIOB_debug_emergency_pin = 1;
+  }
+
+  // STOP SIGNAL
+  if (index == 0x00000001 || index == 1)
+  {
+    *odr_B = 0x00000002;
+    GPIOB_debug_stop_pin = 1;
+  }
+}
+
+void ResertInterruptSignal_GPIOB(int index)
+{
+
+  if (index > 2 || index < 0)
+  {
+    return;
+  }
+
+  // ALLARM SIGNAL
+  if (index == 0x00000000 || index == 0)
+  {
+    *odr_B = 0x00000000;
+    GPIOB_debug_emergency_pin = 0;
+  }
+
+  // STOP SIGNAL
+  if (index == 0x00000001 || index == 1)
+  {
+    *odr_B = 0x00000000;
+    GPIOB_debug_stop_pin = 0;
+  }
+}
+
 // GPIO_C -----------------------------------------------------------------
 
 void WritePin_GPIOC(int index)
@@ -339,8 +394,6 @@ void some_delay(unsigned long int n)
 
 // TASKS ----------------------------------------------------------
 
-int pin_to_set = 3;
-
 // Defines TaskEventSimulator
 __task void TaskEventSimulator(void)
 {
@@ -353,59 +406,114 @@ __task void TaskEventSimulator(void)
 
     //os_dly_wait(2);
 
-    pin_to_set = 2;
-    WritePin_GPIOB(pin_to_set);
+    // TEST 1  - READ AND WRITE SIGNAL --------------
+
+    WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    pin_to_set = 3;
-    WritePin_GPIOB(pin_to_set);
+    WritePin_GPIOB(PIN_MINIMUM_ACCELERATION);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(4);
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(5);
+    WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(6);
+    WritePin_GPIOB(PIN_MINIMUM_BRAKING);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(7);
+    WritePin_GPIOB(PIN_MEDIUM_BRAKING);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(1);
+    WritePin_GPIOB(PIN_STRONG_BRAKING);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(8);
+    // TEST 2  - STOP SIGNAL --------------
+
+    // se arriva il segnale di stop il treno di deve fermare (gentilamente)
+    // si può riprendere solo se il segnale di stop viene interrotto E
+    // il macchinista rimette la leva in posizione di "folle"
+
+    // 2A -> VADO A VELOCITA MEDIA  --------------
+
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+    some_delay(100);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    // 2B -> MI ARRIVA IL SEGNALE DI STOP
+    WriteInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(0);
+    // 2C -> PROVO AD USCIRE DALLO STOP
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+    some_delay(100);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    // 2D -> TOLGO IL SEGNALE DI STOP
+    ResertInterruptSignal_GPIOB(PIN_STOP_SIGNAL);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(8);
+    // 2E -> RI-PROVO AD USCIRE DALLO STOP
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+    some_delay(500);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    // 2F -> PORTO LA LEVA IN POSIZIONE CORRETTA
+    WritePin_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING);
+    some_delay(500);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    // 2G -> RI-RI-PROVO AD USCIRE DALLO STOP
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
+    some_delay(500);
+
+    // TEST 3  - VELOCITA A 3 PER TROPPO TEMPO --------------
+
+    os_sem_send(sem); // Frees the semaphore
+
+    WritePin_GPIOB(PIN_MAXIMUM_ACCELERATION);
+    some_delay(8000);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    WritePin_GPIOB(PIN_MINIMUM_BRAKING);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
 
-    WritePin_GPIOB(1);
+    // TEST 4  - SEGNALE DI EMERGENZA --------------
+
+    // 4A -> SEGNALE DI ALLARME
+    WritePin_GPIOB(PIN_ALLARM_SIGNAL);
+    some_delay(1000);
+
+    os_sem_send(sem); // Frees the semaphore
+
+    // 4B -> PROVO INUTILMENTE AD USCIRE DALL'ALLARME
+    WritePin_GPIOB(PIN_MEDIUM_ACCELERATION);
     some_delay(1000);
 
     os_sem_send(sem); // Frees the semaphore
@@ -430,30 +538,16 @@ __task void TaskTrainController(void)
       continue;
     }
 
-    if (_is_stop_ON)
+    if (_is_stop_ON || CurrentState == STOP)
     {
       CurrentState = STOP;
-      CurrentLeverPosition = medium_braking;
+      WritePin_GPIOC(medium_braking);
       continue;
     }
 
-    switch (CurrentState)
-    {
-
-    case EMERGENCY:
-      _is_emergency_ON = 1;
-      WritePin_GPIOC(12);
-      break;
-
-    case STOP:
-      _is_stop_ON = 1;
-      WritePin_GPIOC(medium_braking);
-      break;
-
-    case NORMAL:
-      WriteLeveOutput(CurrentLeverPosition);
-      break;
-    }
+    // I'm in the normal condition
+    // Just "read and write"
+    WriteLeveOutput(CurrentLeverPosition);
 
     os_sem_wait(sem, 0xFFFF);
   }
