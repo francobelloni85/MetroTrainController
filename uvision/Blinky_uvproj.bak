@@ -200,7 +200,7 @@
             <GenPPlst>0</GenPPlst>
             <AdsCpuType>"Cortex-M3"</AdsCpuType>
             <RvctDeviceName></RvctDeviceName>
-            <mOS>0</mOS>
+            <mOS>1</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
             <hadIROM>1</hadIROM>
@@ -411,6 +411,11 @@
               <FileType>1</FileType>
               <FilePath>Retarget.c</FilePath>
             </File>
+            <File>
+              <FileName>RTX_Config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\RTX_Config.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -420,6 +425,11 @@
               <FileName>Blinky.c</FileName>
               <FileType>1</FileType>
               <FilePath>Blinky.c</FilePath>
+            </File>
+            <File>
+              <FileName>printMsg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\printMsg.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -840,6 +850,11 @@
               <FileType>1</FileType>
               <FilePath>Retarget.c</FilePath>
             </File>
+            <File>
+              <FileName>RTX_Config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\RTX_Config.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -849,6 +864,11 @@
               <FileName>Blinky.c</FileName>
               <FileType>1</FileType>
               <FilePath>Blinky.c</FilePath>
+            </File>
+            <File>
+              <FileName>printMsg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\printMsg.h</FilePath>
             </File>
           </Files>
         </Group>

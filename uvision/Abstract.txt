@@ -31,3 +31,7 @@ https://stackoverflow.com/questions/54735239/programing-stm32-like-stm8register-
 
 Tick
 http://www.handsonembedded.com/stm32f103-spl-tutorial-4/n
+
+
+Usart
+http://wildlab.org/index.php/2019/02/17/usart/
