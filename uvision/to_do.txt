@@ -1,1 +1,7 @@
 ﻿Vedere perchè non riesce a leggere gli input dal GPIOB ....
+
+Possibile soluzione:
+https://stackoverflow.com/questions/56828145/incorrect-value-when-reading-gpiob-idr-register
+
+Bel tutorial:
+https://embetronicx.com/tutorials/microcontrollers/stm32/stm32-gpio-tutorial/

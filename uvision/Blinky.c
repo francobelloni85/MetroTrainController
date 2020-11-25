@@ -143,7 +143,7 @@ void ReadInput()
   // Reset the allarm
   is_emergency_ON = 0;
   is_stop_ON = 0;
-
+	
   // Pin 0 (EMERGENCY)
   read_pin = 0x00000001;
   if (GPIOB->IDR & read_pin || GPIOB_debug_emergency_pin == 1)
@@ -690,33 +690,32 @@ __task void TaskInit(void)
   os_tsk_delete_self();
 }
 
+uint32_t value;
+int value1;
+int a = 0;
+
 // Main
 int main(void)
 {
+		// TO DO:	
+		// Outputs must be configured as push-pull.		
+		// Read from GPIOB		
+	
+    SER_Init();                     	// initialize the serial interface
 
-  SER_Init(); /* initialize the serial interface           */
+    crh_B = (int*)(0x40010C04); 		//define the address of crh register
+    odr_B = (int*)(0x40010C0C); 		//define the address of odr register
 
-  crh_B = (int *)(0x40010C04); //define the address of crh register
-  odr_B = (int *)(0x40010C0C); //define the address of odr register
+    // Enable GPIOB clock       
+    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+    RCC->APB2ENR |= (1UL << 3); // Enable GPIOB clock
+   
+    // DEBUG > SET BIT DIRECTLY
+    *odr_B = 0x00000001;
+    *odr_B = 0x00001110;
+	  
+    // creates the 3 tasks
+    // TaskEventSimulator, TaskTrainController and TaskMessages
+    os_sys_init(TaskInit);
 
-  /* Enable GPIOB clock            */
-  RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-
-  GPIOA->CRH = 0x20010C04;
-  GPIOB->CRH = 0x40010C04;
-  GPIOC->CRH = 0x60010C04;
-
-  // DEBUG > SET BIT DIRECTLY
-  *odr_B = 0x00000000;
-  *odr_B = 0x00001110;
-
-  // DEBUG > TEST READ VALUE AND IT'S WORKING
-  if (GPIOB->IDR & in_pin)
-  {
-    in_pin = in_pin;
-  }
-
-  // creates the two tasks
-  // TaskEventSimulator	and TaskTrainController
-  os_sys_init(TaskInit);
 }
