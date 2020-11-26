@@ -88,30 +88,13 @@ int sleep_timer_tick = 3;
 unsigned int read_pin;
 unsigned int write_pin;
 
-int *crh_B; //CRN register for input output settings
-int *odr_B; //ODR register for output data
-
-unsigned int in_pin_b;
-unsigned int in_pin_c;
+int in_pin_c = 0;
 
 // Used to set the pin in the GPIO_B
 
 volatile int in_pin = 0x00001111;
 
 // END GPIOx ADDRESS
-
-// DEBUG VARIABLES  ---------------------------------------------------------
-
-// used to simulate the input pin
-int GPIOB_debug_pin = -1;
-
-// used to simulate emergency pin is on
-int GPIOB_debug_emergency_pin = 0;
-
-// used to simulate stop pin is on
-int GPIOB_debug_stop_pin = 0;
-
-// END DEBUG VARIABLES
 
 // SERIAL -------------------------------------------------------------------
 
@@ -146,86 +129,62 @@ void ReadInput()
   is_stop_ON = 0;
 	read_pin = 0 ;
 	
-	// 	read_pin=1<<6;
-	// 	if (GPIOB->IDR & read_pin)
-	//  	{
-	// 		read_pin = 12;
-	//  	}
-		
-	
-	
   // Pin 0 (EMERGENCY)	
-	read_pin=1<<PIN_ALLARM_SIGNAL;
-  if (GPIOB->IDR & read_pin)
+  if (IsPinON_GPIOB(PIN_ALLARM_SIGNAL) == 1)
   {
     is_emergency_ON = 1;
   }
 
-  // Pin 1 (STOP)
-	read_pin = 0 ;
-	read_pin=1<<PIN_STOP_SIGNAL;  
-	if (GPIOB->IDR & read_pin)
+  // Pin 1 (STOP) 
+	if (IsPinON_GPIOB(PIN_STOP_SIGNAL)== 1)
   {
     is_stop_ON = 1;
   }
 		
   // Pin 2
-	read_pin = 0 ;
-	read_pin=1<<PIN_STRONG_BRAKING;  
-  if (GPIOB->IDR & read_pin)
+  if (IsPinON_GPIOB(PIN_STRONG_BRAKING)== 1)
 	{
     CurrentLeverPosition = STRONG_BRAKING;
     count_signal++;
   }
 
   // Pin 3
-	read_pin = 0 ;
-	read_pin=1<<PIN_MEDIUM_BRAKING;
-	if (GPIOB->IDR & read_pin)
+	if (IsPinON_GPIOB(PIN_MEDIUM_BRAKING)== 1)
   {
     CurrentLeverPosition = MEDIUM_BRAKING;
     count_signal++;
   }
 
   // Pin 4
-	read_pin = 0 ;
-	read_pin=1<<PIN_MINIMUM_BRAKING;
-	if (GPIOB->IDR & read_pin)
+	if (IsPinON_GPIOB(PIN_MINIMUM_BRAKING)== 1)
   {
     CurrentLeverPosition = MINIMUM_BRAKING;
     count_signal++;
   }
 
   // Pin 5
-	read_pin = 0 ;
-	read_pin=1<<PIN_NO_ACCELERATION_NO_BRAKING;
-	if (GPIOB->IDR & read_pin)
+	if (IsPinON_GPIOB(PIN_NO_ACCELERATION_NO_BRAKING)== 1)
   {
     CurrentLeverPosition = NO_ACCELERATION;
     count_signal++;
   }
 
   // Pin 6
-	read_pin = 0 ;
-	read_pin=1<<PIN_MINIMUM_ACCELERATION;
-	if (GPIOB->IDR & read_pin)
+	if (IsPinON_GPIOB(PIN_MINIMUM_ACCELERATION)== 1)
   {
     CurrentLeverPosition = MINIMUM_ACCELERATION;
     count_signal++;
   }
 
   // Pin 7
-	read_pin = 0 ;
-	read_pin=1<<PIN_MEDIUM_ACCELERATION;
-  if (GPIOB->IDR & read_pin)
+  if (IsPinON_GPIOB(PIN_MEDIUM_ACCELERATION)== 1)
 	{
     CurrentLeverPosition = MEDIUM_ACCELERATION;
     count_signal++;
   }
 
   // Pin 8
-	read_pin = 0 ;
-	read_pin=1<<PIN_MAXIMUM_ACCELERATION;
+	if (IsPinON_GPIOB(PIN_MAXIMUM_ACCELERATION) == 1)
   {
     CurrentLeverPosition = MAXIMUM_ACCELERATION;
     count_signal++;
@@ -251,22 +210,14 @@ void WritePin_GPIOB(int index)
   // 1) Reset all the pins  
 	GPIOB->BSRR = 0xFFFF0000;
 	
-  // 2) Write the pin for the debug pourpose 
-	//GPIOB->ODR ^= read_pin;
-
-  // 3) Write the signal in the GPIOB
-	// read_pin = 1<<index;	
-	// GPIOB_debug_pin = index;
-	
-	// Set the new value
+	// 2) Set the new value
   in_pin_c = 1 << index;
   GPIOB->ODR |= in_pin_c;
 	  
 }
 
 void WriteInterruptSignal_GPIOB(int index)
-{
-
+{	
   if (index > 2 || index < 0)
   {
     return;
@@ -276,17 +227,29 @@ void WriteInterruptSignal_GPIOB(int index)
   if (index == 0x00000000 || index == 0)
   {   
 		GPIOC->BSRR = (1U << 0); 
-    GPIOB_debug_emergency_pin = 1;
   }
 
   // STOP SIGNAL
   if (index == 0x00000001 || index == 1)
   {
-    //*odr_B = 0x00000002;
 		GPIOC->BSRR = (1U << 1); 
-    GPIOB_debug_stop_pin = 1;
   }
 }
+
+
+int IsPinON_GPIOB(int index){
+
+	int value = 0;
+	
+	//Reading PBxx
+	value = (( GPIOB->IDR >> index ) & 0x1);
+	
+	return value;
+	
+}
+
+
+
 
 // GPIO_C -----------------------------------------------------------------
 
@@ -316,14 +279,15 @@ void WritePin_GPIOC(int index)
 // This function must be through WriteLeveOutput,
 // it must not be called directly
 void WritePin_GPIOC_NO_RESET(int index)
-{
+{	  
+	
   if (index > 12 || index < 0)
   {
     return;
   }
 	
   // Set the new value
-  in_pin_c = 1 << index;
+	in_pin_c = 1 << index;
   GPIOC->ODR |= in_pin_c;
 	
 	//GPIOC->BSRR = (1U << 5); 
@@ -465,14 +429,14 @@ __task void TaskEventSimulator(void)
 
     // 3C -> PROVO AD USCIRE DALLO STOP
     // SETTO LA VELOCITA A MEDIA MA TENGO IL SEGNALE DI STOP
-    *odr_B = 0x00000042;
-    GPIOB_debug_pin = PIN_MEDIUM_ACCELERATION;
+		GPIOB->BSRR = (1U << PIN_STOP_SIGNAL); 
+		GPIOB->BSRR = (1U << PIN_MAXIMUM_ACCELERATION); 
 
     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
     // 3D -> TOLGO IL SEGNALE DI STOP
-    *odr_B = 0x00000000;
-    GPIOB_debug_stop_pin = 0;
+    GPIOB->BSRR = 0xFFFF0000;
+		GPIOB->BSRR = (1U << PIN_MAXIMUM_ACCELERATION); 
 
     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
@@ -649,7 +613,7 @@ __task void TaskInit(void)
   os_tsk_delete_self();
 }
 
-int i = 0;
+
 
 
 // Main
@@ -675,7 +639,11 @@ int main(void)
 		// Ad esempio
 		// 0011 (binary) or 0x3 (HEX) - Corresponds to setting pin as output
 		// tutti i bit sono quindi settati (come da tabella) su GP output push-pull
-			
+	
+		// HELP FROM BIT TO HEX
+		// https://www.rapidtables.com/convert/number/decimal-to-hex.html
+		
+		
 		// GPIOB > defined all pin as Output  
 		GPIOB->CRH    =  0x33333333;  
 		GPIOB->CRL     = 0x33333333;    
@@ -685,9 +653,6 @@ int main(void)
 		GPIOC->CRL     = 0x33333333;  
 			
     SER_Init();                     // initialize the serial interface
-
-    //crh_B = (int*)(0x40010C04); 		//define the address of crh register
-    //odr_B = (int*)(0x40010C0C); 		//define the address of odr register
 		
     // Enable GPIOB clock       
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
@@ -695,61 +660,39 @@ int main(void)
 		// enable GPIOA clock
 		RCC->APB2ENR |= ( 1UL << 2); 
 		
+		// JUST FOR DEBUG -------------
+		
 		//set all the bits of Port B
 		GPIOB->BSRR = 0x0000FFFF;
 		
-		read_pin=1<<6;
-		if (GPIOB->IDR & read_pin)
- 		{
-			read_pin = 12;
- 		}
-		
 		//Clear all the bits of Port B
 		GPIOB->BSRR = 0xFFFF0000;
+		
+		// END JUST FOR DEBUG -------------
 		 
 		// SET 2 pin HIGHT for TEST 1 
 		
 		//Set the 5th bit of Port B
 		GPIOB->BSRR = (1U << 5); 
 		
-		//Set the 5th bit of Port B
+		//Set the 8th bit of Port B
 		GPIOB->BSRR = (1U << 8); 
 		 
+		// Useful stuff
+		
 		// Clear the 5th bit of Port B
 		// GPIOB->BSRR = (1U << 21);
-						
-// 		read_pin = 1<<8;	
-// 	  // Set the new value
-// 		GPIOB->ODR ^= read_pin;
-// 		if (GPIOB->IDR & read_pin)
-// 		{
-// 			read_pin = 12;
-// 		}
-// 		if(GPIOB->IDR & in_pin) {
-//       GPIOB->ODR |= out_pin;                 // switch LED ON
-// 		}
-// 		
-// 		
-// 		
-// 		
-// 		// Set the new value
-// 		for(i = 0; i <15; i++){
-// 			read_pin = 1<<i;				
-// 			GPIOB->ODR ^= read_pin;	
-// 		}
-// 			
-// 		// TEST 2 (setto ad 1 tutti i pin)
-// 		
-// 		for(i = 0; i <15; i++){
-// 			
-// 		read_pin = 1<<i;
-// 			// DEBUG TEST LETTURA
-// 			if (GPIOB->IDR & read_pin)
-// 			{
-// 				read_pin = 12;
-// 			}		
-// 		}		
 		
+		// 		//Reading PB0 bit
+		// 		if( ( GPIOB->IDR & 0x8) == 0 )   
+		// 		{
+		// 			//PORT B's 0th bit is 0
+		// 		}
+		// 		else
+		// 		{
+		// 			//PORT B's 0th bit is 1
+		// 		}
+		 
     // creates the 3 tasks
     // TaskEventSimulator, TaskTrainController and TaskMessages
     os_sys_init(TaskInit);
