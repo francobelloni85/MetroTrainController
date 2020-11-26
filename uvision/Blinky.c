@@ -125,7 +125,7 @@ void ReadInput()
   int count_signal = 0;
 
   // Reset the allarm
-  is_emergency_ON = 0;
+  // is_emergency_ON = 0;  
   is_stop_ON = 0;
 	read_pin = 0 ;
 	
@@ -226,13 +226,13 @@ void WriteInterruptSignal_GPIOB(int index)
   // ALLARM SIGNAL
   if (index == 0x00000000 || index == 0)
   {   
-		GPIOC->BSRR = (1U << 0); 
+		GPIOB->BSRR = (1U << 0); 
   }
 
   // STOP SIGNAL
   if (index == 0x00000001 || index == 1)
   {
-		GPIOC->BSRR = (1U << 1); 
+		GPIOB->BSRR = (1U << 1); 
   }
 }
 
@@ -429,6 +429,7 @@ __task void TaskEventSimulator(void)
 
     // 3C -> PROVO AD USCIRE DALLO STOP
     // SETTO LA VELOCITA A MEDIA MA TENGO IL SEGNALE DI STOP
+		GPIOB->BSRR = 0xFFFF0000;
 		GPIOB->BSRR = (1U << PIN_STOP_SIGNAL); 
 		GPIOB->BSRR = (1U << PIN_MAXIMUM_ACCELERATION); 
 
@@ -465,7 +466,7 @@ __task void TaskEventSimulator(void)
 
     WaitTaskEventSimulatorVariables(sleep_timer_tick);
 
-    continue;
+    //continue;
 
     // TEST 5  - SEGNALE DI EMERGENZA --------------
 
@@ -619,17 +620,14 @@ __task void TaskInit(void)
 // Main
 int main(void)
 {
-	
-	
-		// TO DO:	
-		// Outputs must be configured as push-pull.		
-		// Read from GPIOB		
+
 		// CONFIGUARE I REGISTRI 
 	
-		// BREVE INTRO -> 
-		// https://gist.github.com/Vitorbnc/e35f1ff1485d660edf365241dacfa387
-		// https://embetronicx.com/tutorials/microcontrollers/stm32/stm32-gpio-tutorial/
+		// BREVE INTRO  
+		// -> https://gist.github.com/Vitorbnc/e35f1ff1485d660edf365241dacfa387
+		// -> https://embetronicx.com/tutorials/microcontrollers/stm32/stm32-gpio-tutorial/
 		
+		// PROMEMORIA
 		// il registo ha 4 bit, che definisco la porta. Ogni registro gestice 8 porte
 		// ci sono 2 registri CRH e CRL che per gestire le 16 porte
 		// il registro si carica tutto in una volta con una parola da 32 bit -> 4 bit *8 porte = 32bit
