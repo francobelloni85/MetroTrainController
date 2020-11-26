@@ -26,6 +26,7 @@ STM32f103RB
 
 
 Registri
+https://gist.github.com/Vitorbnc/e35f1ff1485d660edf365241dacfa387 --> Fatto bene
 https://stackoverflow.com/questions/54735239/programing-stm32-like-stm8register-level-gpio
 
 

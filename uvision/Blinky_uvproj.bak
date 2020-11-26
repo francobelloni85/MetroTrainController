@@ -416,6 +416,11 @@
               <FileType>1</FileType>
               <FilePath>.\RTX_Config.c</FilePath>
             </File>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Serial.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -425,11 +430,6 @@
               <FileName>Blinky.c</FileName>
               <FileType>1</FileType>
               <FilePath>Blinky.c</FilePath>
-            </File>
-            <File>
-              <FileName>printMsg.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\printMsg.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -855,6 +855,11 @@
               <FileType>1</FileType>
               <FilePath>.\RTX_Config.c</FilePath>
             </File>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Serial.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -864,11 +869,6 @@
               <FileName>Blinky.c</FileName>
               <FileType>1</FileType>
               <FilePath>Blinky.c</FilePath>
-            </File>
-            <File>
-              <FileName>printMsg.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\printMsg.h</FilePath>
             </File>
           </Files>
         </Group>
