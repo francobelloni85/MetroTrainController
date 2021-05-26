@@ -4,3 +4,5 @@
 <li>Gestione dei task </li>
 <li>Letture e scrittura di registri</li>
 <ul>
+Il file principale scritto in c è Blinky.c . Si trova nella cartelle uvision
+  
